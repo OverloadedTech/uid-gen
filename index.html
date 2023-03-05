@@ -1,68 +1,55 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>UID Generator</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>UID Generator</h1>
-    <form>
-      <label for="num-uids">Number of UIDs to generate:</label>
-      <input type="number" id="num-uids" name="num-uids" min="1" max="1000" value="10">
-      <button type="button" onclick="generateUIDs()">Generate</button>
-    </form>
-    <div id="logs"></div>
-    <a id="download-link" style="display: none">Download UIDs</a>
+
+    <label for="num-uids-input">Number of UIDs to generate:</label>
+    <input type="number" id="num-uids-input" min="1" value="1">
+
+    <label for="download-link">Download UIDs as a file:</label>
+    <a download="uids.txt" id="download-link">Download</a>
+
+    <button id="generate-btn">Generate UIDs</button>
+
+    <div id="log"></div>
+
     <script>
-      function generateUIDs() {
-        // Get the number of UIDs to generate from the input field
-        const numUIDs = parseInt(document.getElementById("num-uids").value);
-        // Initialize an array to store the generated UIDs
-        const uids = [];
-        // Generate the specified number of UIDs
-        for (let i = 0; i < numUIDs; i++) {
-          uids.push(
-            generateUID()
-          );
-        }
-        // Log the generated UIDs
-        log(uids.join("\n"));
-        // Convert the UIDs to a Blob object and create a download link
-        const blob = new Blob([uids.join("\n")], { type: "text/plain" });
+        const numUidsInput = document.getElementById("num-uids-input");
+        const generateBtn = document.getElementById("generate-btn");
+        const log = document.getElementById("log");
         const downloadLink = document.getElementById("download-link");
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = "uids.txt";
-        // Show the download link
-        downloadLink.style.display = "block";
-      }
-      
-      function generateUID() {
-        // Initialize an array of hexadecimal digits
-        const hexDigits = "0123456789abcdef".split("");
-        // Generate a random 32-bit integer
-        let num = new Uint32Array(1);
-        window.crypto.getRandomValues(num);
-        // Convert the integer to a string of hexadecimal digits
-        const hexArray = [];
-        for (let i = 0; i < 8; i++) {
-          hexArray.push(hexDigits[(num[0] >> (4 * i)) & 0xf]);
+
+        function generateUid() {
+            let segments = [];
+            for (let i = 0; i < 5; i++) {
+                let segment = "";
+                for (let j = 0; j < 4; j++) {
+                    segment += Math.floor(Math.random() * 16).toString(16);
+                }
+                segments.push(segment);
+            }
+            return segments.join("-");
         }
-        // Insert hyphens at the appropriate positions to create a UUIDv4 string
-        hexArray.splice(4, 0, "-");
-        hexArray.splice(7, 0, "-");
-        hexArray.splice(12, 0, "-");
-        hexArray.splice(17, 0, "-");
-        return hexArray.join("");
-      }
-      
-      function log(message) {
-        // Get the logs element
-        const logs = document.getElementById("logs");
-        // Create a new log entry
-        const logEntry = document.createElement("p");
-        logEntry.textContent = message;
-        // Add the log entry to the logs element
-        logs.appendChild(logEntry);
-      }
+
+        function generateUids(numUids) {
+            let uids = [];
+            for (let i = 0; i < numUids; i++) {
+                let uid = generateUid();
+                uids.push(uid);
+                log.innerText += uid + "\n";
+            }
+            downloadLink.href = "data:text/plain;charset=utf-8," + encodeURIComponent(uids.join("\n"));
+            downloadLink.style.display = "block";
+        }
+
+        generateBtn.addEventListener("click", () => {
+            let numUids = numUidsInput.value;
+            log.innerText = "";
+            generateUids(numUids);
+        });
     </script>
-  </body>
+</body>
 </html>
