@@ -1,59 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Generatore UID</title>
-</head>
-<body>
-	<h1>Generatore UID</h1>
-	<label for="num-uid">Quanti UID vuoi generare?</label>
-	<input type="number" id="num-uid" value="1">
-	<button onclick="generaUID()">Genera UID</button>
-	<div id="log"></div>
-
-	<script>
-		function generaUID() {
-			let numUID = document.getElementById("num-uid").value;
-			let uids = [];
-
-			for (let i = 0; i < numUID; i++) {
-				let uid = "";
-				for (let j = 0; j < 8; j++) {
-					uid += Math.floor(Math.random() * 16).toString(16);
-				}
-				uid += "-";
-				for (let j = 0; j < 4; j++) {
-					uid += Math.floor(Math.random() * 16).toString(16);
-				}
-				uid += "-4";
-				for (let j = 0; j < 3; j++) {
-					uid += Math.floor(Math.random() * 16).toString(16);
-				}
-				uid += "-";
-				let variant = (Math.floor(Math.random() * 4) + 8).toString(16);
-				uid += variant;
-				for (let j = 0; j < 3; j++) {
-					uid += Math.floor(Math.random() * 16).toString(16);
-				}
-				uid += "-";
-				for (let j = 0; j < 12; j++) {
-					uid += Math.floor(Math.random() * 16).toString(16);
-				}
-				uids.push(uid);
-			}
-
-			let log = document.getElementById("log");
-			log.innerHTML = "";
-			for (let i = 0; i < uids.length; i++) {
-				log.innerHTML += uids[i] + "<br>";
-			}
-
-			let link = document.createElement("a");
-			link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(uids.join("\n"));
-			link.download = "uids.txt";
-			link.innerHTML = "Scarica UID";
-			log.appendChild(document.createElement("br"));
-			log.appendChild(link);
-		}
-	</script>
-</body>
+  <head>
+    <title>UID Generator</title>
+  </head>
+  <body>
+    <h1>UID Generator</h1>
+    <form>
+      <label for="num-uids">Number of UIDs to generate:</label>
+      <input type="number" id="num-uids" name="num-uids" min="1" max="1000" value="10">
+      <button type="button" onclick="generateUIDs()">Generate</button>
+    </form>
+    <div id="logs"></div>
+    <a id="download-link" style="display: none">Download UIDs</a>
+    <script>
+      function generateUIDs() {
+        // Get the number of UIDs to generate from the input field
+        const numUIDs = parseInt(document.getElementById("num-uids").value);
+        // Initialize an array to store the generated UIDs
+        const uids = [];
+        // Generate the specified number of UIDs
+        for (let i = 0; i < numUIDs; i++) {
+          uids.push(
+            generateUID()
+          );
+        }
+        // Log the generated UIDs
+        log(uids.join("\n"));
+        // Convert the UIDs to a Blob object and create a download link
+        const blob = new Blob([uids.join("\n")], { type: "text/plain" });
+        const downloadLink = document.getElementById("download-link");
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = "uids.txt";
+        // Show the download link
+        downloadLink.style.display = "block";
+      }
+      
+      function generateUID() {
+        // Initialize an array of hexadecimal digits
+        const hexDigits = "0123456789abcdef".split("");
+        // Generate a random 32-bit integer
+        let num = new Uint32Array(1);
+        window.crypto.getRandomValues(num);
+        // Convert the integer to a string of hexadecimal digits
+        const hexArray = [];
+        for (let i = 0; i < 8; i++) {
+          hexArray.push(hexDigits[(num[0] >> (4 * i)) & 0xf]);
+        }
+        // Insert hyphens at the appropriate positions to create a UUIDv4 string
+        hexArray.splice(4, 0, "-");
+        hexArray.splice(7, 0, "-");
+        hexArray.splice(12, 0, "-");
+        hexArray.splice(17, 0, "-");
+        return hexArray.join("");
+      }
+      
+      function log(message) {
+        // Get the logs element
+        const logs = document.getElementById("logs");
+        // Create a new log entry
+        const logEntry = document.createElement("p");
+        logEntry.textContent = message;
+        // Add the log entry to the logs element
+        logs.appendChild(logEntry);
+      }
+    </script>
+  </body>
 </html>
