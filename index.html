@@ -11,17 +11,10 @@
 	<input type="text" id="discord_webhook" name="discord_webhook" required><br><br>
 	<button type="button" onclick="generateUIDs()">Genera UID</button>
 
-	<script>
-		// Definizione della funzione per il logger
-		function logActivity(activity) {
-			var log = document.getElementById("log");
-			var timestamp = new Date().toLocaleString();
-			var message = timestamp + " - " + activity;
-			var listItem = document.createElement("li");
-			listItem.appendChild(document.createTextNode(message));
-			log.appendChild(listItem);
-		}
+	<h2>Log delle attività</h2>
+	<ul id="log"></ul>
 
+	<script>
 		function generateUIDs() {
 			var num_uids = document.getElementById("num_uids").value;
 			var discord_webhook = document.getElementById("discord_webhook").value;
@@ -58,10 +51,15 @@
 				}
 			}
 		}
-	</script>
 
-	<!-- Aggiunta del logger alla pagina -->
-	<h2>Log delle attività</h2>
-	<ul id="log"></ul>
+		function logActivity(activity) {
+			var log = document.getElementById("log");
+			var timestamp = new Date().toLocaleString();
+			var message = timestamp + " - " + activity;
+			var listItem = document.createElement("li");
+			listItem.appendChild(document.createTextNode(message));
+			log.appendChild(listItem);
+		}
+	</script>
 </body>
 </html>
