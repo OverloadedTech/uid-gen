@@ -1,76 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Generatore UID</title>
+	<title>Generatore UID</title>
 </head>
 <body>
-  <h1>Generatore UID</h1>
-  <p>Quanti UID vuoi generare?</p>
-  <input type="number" id="numUIDs" value="5">
-  <p>Inserisci l'URL del webhook di Discord:</p>
-  <input type="text" id="webhookURL" value="https://discordapp.com/api/webhooks/xxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-  <br><br>
-  <button onclick="generateUIDsAndSendToDiscord()">Genera UID e invia a Discord</button>
-  <br><br>
-  <div id="log"></div>
-  <script>
-    var logger = function(msg) {
-      var log = document.getElementById("log");
-      log.innerHTML += "<p>" + msg + "</p>";
-    };
+	<h1>Generatore UID</h1>
+	<label for="num-uid">Quanti UID vuoi generare?</label>
+	<input type="number" id="num-uid" value="1">
+	<button onclick="generaUID()">Genera UID</button>
+	<div id="log"></div>
 
-    var generateUID = function() {
-      var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      var uid = "";
-      for (var i = 0; i < 5; i++) {
-        for (var j = 0; j < 5; j++) {
-          uid += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        if (i < 4) {
-          uid += "-";
-        }
-      }
-      return uid;
-    };
+	<script>
+		function generaUID() {
+			let numUID = document.getElementById("num-uid").value;
+			let uids = [];
 
-    var generateUIDs = function(numUIDs) {
-      var uids = [];
-      for (var i = 0; i < numUIDs; i++) {
-        uids.push(generateUID());
-      }
-      return uids;
-    };
+			for (let i = 0; i < numUID; i++) {
+				let uid = "";
+				for (let j = 0; j < 8; j++) {
+					uid += Math.floor(Math.random() * 16).toString(16);
+				}
+				uid += "-";
+				for (let j = 0; j < 4; j++) {
+					uid += Math.floor(Math.random() * 16).toString(16);
+				}
+				uid += "-4";
+				for (let j = 0; j < 3; j++) {
+					uid += Math.floor(Math.random() * 16).toString(16);
+				}
+				uid += "-";
+				let variant = (Math.floor(Math.random() * 4) + 8).toString(16);
+				uid += variant;
+				for (let j = 0; j < 3; j++) {
+					uid += Math.floor(Math.random() * 16).toString(16);
+				}
+				uid += "-";
+				for (let j = 0; j < 12; j++) {
+					uid += Math.floor(Math.random() * 16).toString(16);
+				}
+				uids.push(uid);
+			}
 
-    var sendUIDsToDiscord = function(webhookURL, uids) {
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", webhookURL, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
+			let log = document.getElementById("log");
+			log.innerHTML = "";
+			for (let i = 0; i < uids.length; i++) {
+				log.innerHTML += uids[i] + "<br>";
+			}
 
-      var message = "Ecco gli UID generati: " + uids.join(", ");
-      var data = {
-        "content": message
-      };
-
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          logger("Codice di stato HTTP: " + xhr.status);
-          logger("Messaggio di risposta: " + xhr.responseText);
-        }
-      };
-
-      xhr.send(JSON.stringify(data));
-    };
-
-    var generateUIDsAndSendToDiscord = function() {
-      var numUIDs = parseInt(document.getElementById("numUIDs").value);
-      var webhookURL = document.getElementById("webhookURL").value;
-
-      var uids = generateUIDs(numUIDs);
-      logger("Generati " + numUIDs + " UID:");
-      logger(uids.join(", "));
-
-      sendUIDsToDiscord(webhookURL, uids);
-    };
-  </script>
+			let link = document.createElement("a");
+			link.href = "data:text/plain;charset=utf-8," + encodeURIComponent(uids.join("\n"));
+			link.download = "uids.txt";
+			link.innerHTML = "Scarica UID";
+			log.appendChild(document.createElement("br"));
+			log.appendChild(link);
+		}
+	</script>
 </body>
 </html>
