@@ -1,65 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Generatore di UID per Discord</title>
+  <title>Generatore UID</title>
 </head>
 <body>
-	<h1>Generatore di UID per Discord</h1>
-	<label for="num_uids">Quanti UID vuoi generare?</label>
-	<input type="number" id="num_uids" name="num_uids" min="1" max="100" required><br><br>
-	<label for="discord_webhook">Inserisci l'URL del webhook di Discord:</label>
-	<input type="text" id="discord_webhook" name="discord_webhook" required><br><br>
-	<button type="button" onclick="generateUIDs()">Genera UID</button>
+  <h1>Generatore UID</h1>
+  <p>Quanti UID vuoi generare?</p>
+  <input type="number" id="numUIDs" value="5">
+  <p>Inserisci l'URL del webhook di Discord:</p>
+  <input type="text" id="webhookURL" value="https://discordapp.com/api/webhooks/xxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+  <br><br>
+  <button onclick="generateUIDsAndSendToDiscord()">Genera UID e invia a Discord</button>
+  <br><br>
+  <div id="log"></div>
+  <script>
+    var logger = function(msg) {
+      var log = document.getElementById("log");
+      log.innerHTML += "<p>" + msg + "</p>";
+    };
 
-	<h2>Log delle attività</h2>
-	<ul id="log"></ul>
+    var generateUID = function() {
+      var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var uid = "";
+      for (var i = 0; i < 5; i++) {
+        for (var j = 0; j < 5; j++) {
+          uid += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        if (i < 4) {
+          uid += "-";
+        }
+      }
+      return uid;
+    };
 
-	<script>
-		function generateUIDs() {
-			var num_uids = document.getElementById("num_uids").value;
-			var discord_webhook = document.getElementById("discord_webhook").value;
-			var uids = [];
+    var generateUIDs = function(numUIDs) {
+      var uids = [];
+      for (var i = 0; i < numUIDs; i++) {
+        uids.push(generateUID());
+      }
+      return uids;
+    };
 
-			// Generazione degli UID
-			for (var i = 0; i < num_uids; i++) {
-				var uid = '';
-				for (var j = 0; j < 5; j++) {
-					uid += Math.floor(Math.random() * 100000).toString().padStart(5, '0');
-					if (j != 4) {
-						uid += '-';
-					}
-				}
-				uids.push(uid);
-			}
+    var sendUIDsToDiscord = function(webhookURL, uids) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", webhookURL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
 
-			// Invio degli UID al webhook di Discord
-			var xhr = new XMLHttpRequest();
-			xhr.open("POST", discord_webhook, true);
-			xhr.setRequestHeader('Content-Type', 'application/json');
-			xhr.send(JSON.stringify({ uids: uids }));
+      var message = "Ecco gli UID generati: " + uids.join(", ");
+      var data = {
+        "content": message
+      };
 
-			// Visualizzazione dei dettagli della richiesta nella console del browser
-			xhr.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-					logActivity("La richiesta è stata inviata con successo al webhook di Discord!");
-					logActivity("Codice di stato HTTP: " + this.status);
-					logActivity("Corpo della risposta: " + this.responseText);
-				} else if (this.readyState == 4 && this.status != 200) {
-					logActivity("La richiesta non è stata inviata al webhook di Discord.");
-					logActivity("Codice di stato HTTP: " + this.status);
-					logActivity("Messaggio di errore: " + this.responseText);
-				}
-			}
-		}
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          logger("Codice di stato HTTP: " + xhr.status);
+          logger("Messaggio di risposta: " + xhr.responseText);
+        }
+      };
 
-		function logActivity(activity) {
-			var log = document.getElementById("log");
-			var timestamp = new Date().toLocaleString();
-			var message = timestamp + " - " + activity;
-			var listItem = document.createElement("li");
-			listItem.appendChild(document.createTextNode(message));
-			log.appendChild(listItem);
-		}
-	</script>
+      xhr.send(JSON.stringify(data));
+    };
+
+    var generateUIDsAndSendToDiscord = function() {
+      var numUIDs = parseInt(document.getElementById("numUIDs").value);
+      var webhookURL = document.getElementById("webhookURL").value;
+
+      var uids = generateUIDs(numUIDs);
+      logger("Generati " + numUIDs + " UID:");
+      logger(uids.join(", "));
+
+      sendUIDsToDiscord(webhookURL, uids);
+    };
+  </script>
 </body>
 </html>
